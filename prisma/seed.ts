@@ -40,6 +40,20 @@ async function seed() {
     },
   });
 
+  await prisma.movie.create({
+    data: {
+      title: "Coco",
+      userId: user.id,
+    },
+  });
+
+  await prisma.movie.create({
+    data: {
+      title: "Moana",
+      userId: user.id,
+    },
+  });
+
   console.log(`Database has been seeded. 🌱`);
 }
 
