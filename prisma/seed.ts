@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import faker from "@faker-js/faker"
 
 const prisma = new PrismaClient();
 
@@ -40,19 +41,14 @@ async function seed() {
     },
   });
 
-  await prisma.movie.create({
-    data: {
-      title: "Coco",
-      userId: user.id,
-    },
-  });
-
-  await prisma.movie.create({
-    data: {
-      title: "Moana",
-      userId: user.id,
-    },
-  });
+  for (let i = 0; i < 20; i++) {
+    await prisma.movie.create({
+      data: {
+        title: faker.lorem.words(),
+        userId: user.id,
+      },
+    });
+  }
 
   console.log(`Database has been seeded. 🌱`);
 }
