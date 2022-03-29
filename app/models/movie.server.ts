@@ -15,9 +15,8 @@ export function getMovie({
   });
 }
 
-export function getMovieListItems({ userId }: { userId: User["id"] }) {
+export function getMovieListItems() {
   return prisma.movie.findMany({
-    where: { userId },
     select: { id: true, title: true },
     orderBy: { updatedAt: "desc" },
   });
