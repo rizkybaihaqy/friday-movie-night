@@ -78,6 +78,25 @@ export default function MoviesPage() {
 
   return (
     <div className="flex h-full min-h-screen flex-col">
+      <header className="flex items-center justify-between bg-slate-800 p-4 text-white">
+        {user ? (
+          <>
+            <h1 className="text-3xl font-bold">Vote or Add Your Fav Movie</h1>
+            <Form action="/logout" method="post">
+              <button
+                type="submit"
+                className="rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-blue-500 active:bg-blue-600"
+              >
+                Logout
+              </button>
+            </Form>
+          </>
+        ) : (
+          <h1 className="text-3xl font-bold">
+            Login Vote or Add Your Fav Movie
+          </h1>
+        )}
+      </header>
       <main className="flex h-full bg-white">
         <div className="h-full w-8/12 overflow-auto border-r bg-gray-50">
           <h2 className="sticky top-0 bg-white p-4 text-xl text-blue-500">
