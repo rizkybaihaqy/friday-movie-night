@@ -73,10 +73,11 @@ export default function MoviesPage() {
           {data.movieListItems.length === 0 ? (
             <p className="p-4">No movies yet</p>
           ) : (
-            <ol>
+            <ol className="list-inside list-decimal">
               {data.movieListItems.map((movie) => (
-                <li key={movie.id} className="block border-b p-4 text-xl">
-                  📝 {movie.title}
+                <li key={movie.id} className="border-b p-4 text-xl">
+                  <span>{movie.title}</span>
+                  <span className="cursor-pointer px-1">💖</span>
                 </li>
               ))}
             </ol>
@@ -137,10 +138,11 @@ export default function MoviesPage() {
             {data.movieListItems.length === 0 ? (
               <p className="p-4">No movies yet</p>
             ) : (
-              <ol>
+              <ol className="list-inside list-decimal">
                 {data.movieListItems.map((movie) => (
-                  <li key={movie.id} className="block border-b p-4 text-xl">
-                    📝 {movie.title}
+                  <li key={movie.id} className="border-b p-4 text-xl">
+                    <span>{movie.title}</span>
+                    <span className="cursor-pointer px-1">💖</span>
                   </li>
                 ))}
               </ol>
