@@ -9,7 +9,11 @@ import {
   useActionData,
   useLoaderData,
 } from "remix";
-import { createMovie, getMovieListItems } from "~/models/movie.server";
+import {
+  createMovie,
+  getMovieListItems,
+  voteMovie,
+} from "~/models/movie.server";
 import { requireUserId } from "~/session.server";
 import { useOptionalUser } from "~/utils";
 
@@ -25,24 +29,36 @@ export const loader: LoaderFunction = async () => {
 type ActionData = {
   errors?: {
     title?: string;
-    body?: string;
+    vote?: string;
   };
 };
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-
   const formData = await request.formData();
   const title = formData.get("title");
+  const movieId = formData.get("movieId");
 
-  if (typeof title !== "string" || title.length === 0) {
-    return json<ActionData>(
-      { errors: { title: "Title is required" } },
-      { status: 400 }
-    );
+  // move else to its own route
+  if (formData.get("_method") === "patch") {
+    if (typeof movieId !== "string" || movieId.length === 0) {
+      return json<ActionData>(
+        { errors: { vote: "Well, thats a bug" } },
+        { status: 400 }
+      );
+    }
+
+    await voteMovie({ id: movieId, userId });
+  } else {
+    if (typeof title !== "string" || title.length === 0) {
+      return json<ActionData>(
+        { errors: { title: "Title is required" } },
+        { status: 400 }
+      );
+    }
+
+    await createMovie({ title, userId });
   }
-
-  const movie = await createMovie({ title, userId });
 
   return redirect("/");
 };
@@ -77,7 +93,13 @@ export default function MoviesPage() {
               {data.movieListItems.map((movie) => (
                 <li key={movie.id} className="border-b p-4 text-xl">
                   <span>{movie.title}</span>
-                  <span className="cursor-pointer px-1">💖</span>
+                  <Form method="post" className="inline">
+                    <input type="hidden" name="movieId" value={movie.id} />
+                    <input type="hidden" name="_method" value="patch" />
+                    <button type="submit" className="button">
+                      💖
+                    </button>
+                  </Form>
                 </li>
               ))}
             </ol>
@@ -142,7 +164,13 @@ export default function MoviesPage() {
                 {data.movieListItems.map((movie) => (
                   <li key={movie.id} className="border-b p-4 text-xl">
                     <span>{movie.title}</span>
-                    <span className="cursor-pointer px-1">💖</span>
+                    <Form method="post" className="inline">
+                      <input type="hidden" name="movieId" value={movie.id} />
+                      <input type="hidden" name="_method" value="patch" />
+                      <button type="submit" className="button">
+                        💖
+                      </button>
+                    </Form>
                   </li>
                 ))}
               </ol>

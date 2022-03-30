@@ -38,6 +38,7 @@ model Note {
   userId String
 }
 
+// TODO add number of votes
 model Movie {
   id    String @id @default(cuid())
   title String

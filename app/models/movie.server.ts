@@ -48,3 +48,12 @@ export function deleteMovie({
     where: { id, userId },
   });
 }
+
+export function voteMovie({
+  id,
+  userId,
+}: Pick<Movie, "id"> & {
+  userId: User["id"];
+}) {
+  // TODO
+}
