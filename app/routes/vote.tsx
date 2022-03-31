@@ -25,7 +25,6 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   const exist = await getExistVote({movieId, userId})
-  console.log(exist)
 
   exist ? await deleteVote({ id: exist.id }) : await createVote({movieId, userId})
 

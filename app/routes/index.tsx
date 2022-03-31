@@ -11,22 +11,26 @@ import {
 } from "remix";
 import {
   createMovie,
-  getMovieListItems,
   getMovieRecentListItems,
   getMovieWeeklyListItems,
 } from "~/models/movie.server";
-import { requireUserId } from "~/session.server";
+import { getUserId, requireUserId } from "~/session.server";
 import { useOptionalUser } from "~/utils";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 type LoaderData = {
-  movieListItems: Awaited<ReturnType<typeof getMovieWeeklyListItems>>;
+  movieWeeklyListItems: Awaited<ReturnType<typeof getMovieWeeklyListItems>>;
   movieRecentListItems: Awaited<ReturnType<typeof getMovieRecentListItems>>;
 };
 
-export const loader: LoaderFunction = async () => {
-  const movieListItems = await getMovieWeeklyListItems();
-  const movieRecentListItems = await getMovieRecentListItems();
-  return json<LoaderData>({ movieListItems, movieRecentListItems });
+export const loader: LoaderFunction = async ({ request }) => {
+  let userId = ""
+  await getUserId(request).then(uid => {
+    if (typeof uid === 'string') userId = uid
+  });
+  const movieWeeklyListItems = await getMovieWeeklyListItems({ userId: userId });
+  const movieRecentListItems = await getMovieRecentListItems({ userId: userId });
+  return json<LoaderData>({ movieWeeklyListItems, movieRecentListItems });
 };
 
 type ActionData = {
@@ -95,17 +99,21 @@ export default function MoviesPage() {
 
           <hr />
 
-          {data.movieListItems.length === 0 ? (
+          {data.movieWeeklyListItems.length === 0 ? (
             <p className="p-4">No movies yet</p>
           ) : (
             <ol className="list-inside list-decimal">
-              {data.movieListItems.map((movie) => (
+              {data.movieWeeklyListItems.map((movie) => (
                 <li key={movie.id} className="border-b p-4 text-xl">
                   <span>{movie.title}</span>
                   <Form method="post" action="/vote" className="inline">
                     <input type="hidden" name="movieId" value={movie.id} />
-                    <button type="submit" className="button">
-                      💖
+                    <button type="submit" className="button float-right">
+                      {movie.votes.length === 0 ? (
+                        <FaRegHeart />
+                      ) : (
+                        <FaHeart />
+                      )}
                     </button>
                   </Form>
                 </li>
@@ -165,7 +173,7 @@ export default function MoviesPage() {
 
           <div className="flex flex-col overflow-y-scroll">
             <h2 className="sticky top-0 bg-white">Recently Added Movies</h2>
-            {data.movieListItems.length === 0 ? (
+            {data.movieWeeklyListItems.length === 0 ? (
               <p className="p-4">No movies yet</p>
             ) : (
               <ol className="list-inside list-decimal">
@@ -173,11 +181,15 @@ export default function MoviesPage() {
                   <li key={movie.id} className="border-b p-4 text-xl">
                     <span>{movie.title}</span>
                     <Form method="post" action="/vote" className="inline">
-                    <input type="hidden" name="movieId" value={movie.id} />
-                    <button type="submit" className="button">
-                      💖
-                    </button>
-                  </Form>
+                      <input type="hidden" name="movieId" value={movie.id} />
+                      <button type="submit" className="button float-right">
+                        {movie.votes.length === 0 ? (
+                          <FaRegHeart />
+                        ) : (
+                          <FaHeart />
+                        )}
+                      </button>
+                    </Form>
                   </li>
                 ))}
               </ol>

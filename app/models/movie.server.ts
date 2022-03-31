@@ -29,7 +29,7 @@ export function getMovieListItems() {
   });
 }
 
-export function getMovieWeeklyListItems() {
+export function getMovieWeeklyListItems({ userId }: { userId: User["id"] }) {
   let from, to
   const current = new Date()
   if (current.getDay() <= 5) {
@@ -40,7 +40,15 @@ export function getMovieWeeklyListItems() {
     to = current.setDate(current.getDate() + 6)
   }
   return prisma.movie.findMany({
-    select: { id: true, title: true },
+    select: { 
+      id: true, 
+      title: true, 
+      votes: {
+        where: {
+          userId: userId
+        }
+      } 
+    },
     where: {
       updatedAt: {
         gte: new Date(from),
@@ -58,7 +66,7 @@ export function getMovieWeeklyListItems() {
   });
 }
 
-export function getMovieRecentListItems() {
+export function getMovieRecentListItems({ userId }: { userId: User["id"] }) {
   let from, to
   const current = new Date()
   if (current.getDay() <= 5) {
@@ -69,7 +77,15 @@ export function getMovieRecentListItems() {
     to = current.setDate(current.getDate() + 6)
   }
   return prisma.movie.findMany({
-    select: { id: true, title: true },
+    select: { 
+      id: true, 
+      title: true, 
+      votes: {
+        where: {
+          userId: userId
+        }
+      } 
+    },
     where: {
       updatedAt: {
         gte: new Date(from),
