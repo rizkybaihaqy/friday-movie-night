@@ -11,8 +11,7 @@ import {
 
 import { getUserId, createUserSession } from "~/session.server";
 
-import { createUser, getUserByEmail } from "~/models/user.server";
-import { validateEmail } from "~/utils";
+import { createUser, getUserByUsername } from "~/models/user.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -22,20 +21,20 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 interface ActionData {
   errors: {
-    email?: string;
+    username?: string;
     password?: string;
   };
 }
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const email = formData.get("email");
+  const username = formData.get("username");
   const password = formData.get("password");
   const redirectTo = formData.get("redirectTo");
 
-  if (!validateEmail(email)) {
+  if (!(typeof username === 'string')) {
     return json<ActionData>(
-      { errors: { email: "Email is invalid" } },
+      { errors: { username: "Username is invalid" } },
       { status: 400 }
     );
   }
@@ -54,15 +53,15 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const existingUser = await getUserByEmail(email);
+  const existingUser = await getUserByUsername(username);
   if (existingUser) {
     return json<ActionData>(
-      { errors: { email: "A user already exists with this email" } },
+      { errors: { username: "A user already exists with this username" } },
       { status: 400 }
     );
   }
 
-  const user = await createUser(email, password);
+  const user = await createUser(username, password);
 
   return createUserSession({
     request,
@@ -86,7 +85,7 @@ export default function Join() {
   const passwordRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (actionData?.errors?.email) {
+    if (actionData?.errors?.username) {
       emailRef.current?.focus();
     } else if (actionData?.errors?.password) {
       passwordRef.current?.focus();
@@ -102,24 +101,24 @@ export default function Join() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              Email address
+              Username
             </label>
             <div className="mt-1">
               <input
                 ref={emailRef}
-                id="email"
+                id="username"
                 required
                 autoFocus={true}
-                name="email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={actionData?.errors?.email ? true : undefined}
+                name="username"
+                type="text"
+                autoComplete="username"
+                aria-invalid={actionData?.errors?.username ? true : undefined}
                 aria-describedby="email-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.email && (
+              {actionData?.errors?.username && (
                 <div className="pt-1 text-red-700" id="email-error">
-                  {actionData.errors.email}
+                  {actionData.errors.username}
                 </div>
               )}
             </div>

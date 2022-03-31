@@ -5,10 +5,10 @@ import faker from "@faker-js/faker"
 const prisma = new PrismaClient();
 
 async function seed() {
-  const email = "rachel@remix.run";
+  const username = "rachel@remix.run";
 
   // cleanup the existing database
-  await prisma.user.delete({ where: { email } }).catch(() => {
+  await prisma.user.delete({ where: { username } }).catch(() => {
     // no worries if it doesn't exist yet
   });
 
@@ -16,7 +16,7 @@ async function seed() {
 
   const user = await prisma.user.create({
     data: {
-      email,
+      username,
       password: {
         create: {
           hash: hashedPassword,

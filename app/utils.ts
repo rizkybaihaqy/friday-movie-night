@@ -21,7 +21,7 @@ export function useMatchesData(
 }
 
 function isUser(user: any): user is User {
-  return user && typeof user === "object" && typeof user.email === "string";
+  return user && typeof user === "object" && typeof user.username === "string";
 }
 
 export function useOptionalUser(): User | undefined {
@@ -40,8 +40,4 @@ export function useUser(): User {
     );
   }
   return maybeUser;
-}
-
-export function validateEmail(email: unknown): email is string {
-  return typeof email === "string" && email.length > 3 && email.includes("@");
 }

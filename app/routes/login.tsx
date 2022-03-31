@@ -11,7 +11,6 @@ import {
 
 import { createUserSession, getUserId } from "~/session.server";
 import { verifyLogin } from "~/models/user.server";
-import { validateEmail } from "~/utils";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -21,21 +20,21 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 interface ActionData {
   errors?: {
-    email?: string;
+    username?: string;
     password?: string;
   };
 }
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const email = formData.get("email");
+  const username = formData.get("username");
   const password = formData.get("password");
   const redirectTo = formData.get("redirectTo");
   const remember = formData.get("remember");
 
-  if (!validateEmail(email)) {
+  if (!(typeof username === 'string')) {
     return json<ActionData>(
-      { errors: { email: "Email is invalid" } },
+      { errors: { username: "Username is invalid" } },
       { status: 400 }
     );
   }
@@ -54,11 +53,11 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await verifyLogin(email, password);
+  const user = await verifyLogin(username, password);
 
   if (!user) {
     return json<ActionData>(
-      { errors: { email: "Invalid email or password" } },
+      { errors: { username: "Invalid username or password" } },
       { status: 400 }
     );
   }
@@ -85,7 +84,7 @@ export default function LoginPage() {
   const passwordRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (actionData?.errors?.email) {
+    if (actionData?.errors?.username) {
       emailRef.current?.focus();
     } else if (actionData?.errors?.password) {
       passwordRef.current?.focus();
@@ -98,27 +97,27 @@ export default function LoginPage() {
         <Form method="post" className="space-y-6">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="username"
               className="block text-sm font-medium text-gray-700"
             >
-              Email address
+              Username
             </label>
             <div className="mt-1">
               <input
                 ref={emailRef}
-                id="email"
+                id="username"
                 required
                 autoFocus={true}
-                name="email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={actionData?.errors?.email ? true : undefined}
-                aria-describedby="email-error"
+                name="username"
+                type="text"
+                autoComplete="username"
+                aria-invalid={actionData?.errors?.username ? true : undefined}
+                aria-describedby="username-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.email && (
+              {actionData?.errors?.username && (
                 <div className="pt-1 text-red-700" id="email-error">
-                  {actionData.errors.email}
+                  {actionData.errors.username}
                 </div>
               )}
             </div>
