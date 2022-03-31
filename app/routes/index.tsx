@@ -12,18 +12,21 @@ import {
 import {
   createMovie,
   getMovieListItems,
-  voteMovie,
+  getMovieRecentListItems,
+  getMovieWeeklyListItems,
 } from "~/models/movie.server";
 import { requireUserId } from "~/session.server";
 import { useOptionalUser } from "~/utils";
 
 type LoaderData = {
-  movieListItems: Awaited<ReturnType<typeof getMovieListItems>>;
+  movieListItems: Awaited<ReturnType<typeof getMovieWeeklyListItems>>;
+  movieRecentListItems: Awaited<ReturnType<typeof getMovieRecentListItems>>;
 };
 
 export const loader: LoaderFunction = async () => {
-  const movieListItems = await getMovieListItems();
-  return json<LoaderData>({ movieListItems });
+  const movieListItems = await getMovieWeeklyListItems();
+  const movieRecentListItems = await getMovieRecentListItems();
+  return json<LoaderData>({ movieListItems, movieRecentListItems });
 };
 
 type ActionData = {
@@ -37,28 +40,15 @@ export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const formData = await request.formData();
   const title = formData.get("title");
-  const movieId = formData.get("movieId");
 
-  // move else to its own route
-  if (formData.get("_method") === "patch") {
-    if (typeof movieId !== "string" || movieId.length === 0) {
-      return json<ActionData>(
-        { errors: { vote: "Well, thats a bug" } },
-        { status: 400 }
-      );
-    }
-
-    await voteMovie({ id: movieId, userId });
-  } else {
-    if (typeof title !== "string" || title.length === 0) {
-      return json<ActionData>(
-        { errors: { title: "Title is required" } },
-        { status: 400 }
-      );
-    }
-
-    await createMovie({ title, userId });
+  if (typeof title !== "string" || title.length === 0) {
+    return json<ActionData>(
+      { errors: { title: "Title is required" } },
+      { status: 400 }
+    );
   }
+
+  await createMovie({ title, userId });
 
   return redirect("/");
 };
@@ -112,9 +102,8 @@ export default function MoviesPage() {
               {data.movieListItems.map((movie) => (
                 <li key={movie.id} className="border-b p-4 text-xl">
                   <span>{movie.title}</span>
-                  <Form method="post" className="inline">
+                  <Form method="post" action="/vote" className="inline">
                     <input type="hidden" name="movieId" value={movie.id} />
-                    <input type="hidden" name="_method" value="patch" />
                     <button type="submit" className="button">
                       💖
                     </button>
@@ -180,16 +169,15 @@ export default function MoviesPage() {
               <p className="p-4">No movies yet</p>
             ) : (
               <ol className="list-inside list-decimal">
-                {data.movieListItems.map((movie) => (
+                {data.movieRecentListItems.map((movie) => (
                   <li key={movie.id} className="border-b p-4 text-xl">
                     <span>{movie.title}</span>
-                    <Form method="post" className="inline">
-                      <input type="hidden" name="movieId" value={movie.id} />
-                      <input type="hidden" name="_method" value="patch" />
-                      <button type="submit" className="button">
-                        💖
-                      </button>
-                    </Form>
+                    <Form method="post" action="/vote" className="inline">
+                    <input type="hidden" name="movieId" value={movie.id} />
+                    <button type="submit" className="button">
+                      💖
+                    </button>
+                  </Form>
                   </li>
                 ))}
               </ol>
